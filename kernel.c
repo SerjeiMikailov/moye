@@ -2,13 +2,16 @@
 #include "utils.h"
 #include "char.h"
 
+#define MAX_INPUT_LENGHT 200
+#define custom_sizeof(type) ((uint32)(sizeof(type)))
+
 uint32 vga_index;
 static uint32 next_line_index = 1;
 uint8 g_fore_color = WHITE, g_back_color = BLUE;
 int digit_ascii_codes[10] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39};
 
 /*
-this is same as we did in our assembly code for vga_print_char
+assembly code for vga_print_char
 
 vga_print_char:
   mov di, word[VGA_INDEX]
@@ -127,31 +130,85 @@ void wait_for_io(uint32 timer_count)
     }
 }
 
+void M_memset(void *ptr, uint8 value, uint32 num_bytes)
+{
+  uint8 *byte_ptr = (uint8 *)ptr;
+  for(uint32 i = 0; i < num_bytes; i++)
+  {
+    *byte_ptr = value;
+    byte_ptr++;
+  }
+}
+
 void sleep(uint32 timer_count)
 {
   wait_for_io(timer_count);
 }
 
-void test_input()
+int strcmp(const char *str1, const char *str2)
 {
-  char ch = 0;
-  char keycode = 0;
-  do{
-    keycode = get_input_keycode();
-    if(keycode == KEY_ENTER){
-      print_new_line();
-    }else{
-      ch = get_ascii_char(keycode);
-      print_char(ch);
-    }
-    sleep(0x02FFFFFF);
-  }while(ch > 0);
+  while(*str1 && *str2 && *str1 == *str2)
+  {
+    str1++;
+    str2++;
+  }
+  return *str1 - *str2;
 }
+
+void test_input() {
+    char ch = 0;
+    char keycode = 0;
+    char command_buffer[MAX_INPUT_LENGHT];
+    uint32 command_index = 0;
+
+    do {
+        keycode = get_input_keycode();
+
+        if (keycode == KEY_ENTER) {
+            print_new_line();
+
+            // Null-terminate the command buffer
+            command_buffer[command_index] = '\0';
+
+            // Process the command
+            if (strcmp(command_buffer, "clear") == 0) {
+                clear_vga_buffer(&vga_buffer, g_fore_color, g_back_color);
+                next_line_index = 1;
+            } else if (strcmp(command_buffer, "HELLO") == 0) {
+                print_string("Hello, World!");
+                print_new_line();
+            } else {
+                // Unrecognized command
+                print_string("Unknown command: ");
+                print_string(command_buffer);
+                print_new_line();
+            }
+
+            // Clear the command buffer for the next input
+            command_index = 0;
+            M_memset(command_buffer, 0, sizeof(command_buffer));
+        } else if (keycode != 0) {
+            ch = get_ascii_char(keycode);
+
+            if (command_index < MAX_INPUT_LENGHT - 1) {
+                // Append the character to the command buffer
+                command_buffer[command_index] = ch;
+                command_index++;
+
+                // Display the character on the screen
+                print_char(ch);
+            }
+        }
+
+        sleep(0x02FFFFFF);
+    } while (ch > 0);
+}
+
 
 void kernel_entry()
 {
   init_vga(WHITE, BLUE);
-  print_string("Type here, one key per second, ENTER to go to next line");
+  print_string("MoyeOS Terminal"); 
   print_new_line();
   test_input();
 
