@@ -175,7 +175,7 @@ void test_input() {
                 clear_vga_buffer(&vga_buffer, g_fore_color, g_back_color);
                 next_line_index = 1;
             } else if (strcmp(command_buffer, "HELLO") == 0) {
-                print_string("Hello, World!");
+                print_string("Welcome to MoyeOS!");
                 print_new_line();
             } else {
                 // Unrecognized command
