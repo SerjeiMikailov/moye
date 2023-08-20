@@ -115,11 +115,6 @@ char get_input_keycode()
   return ch;
 }
 
-/*
-keep the cpu busy for doing nothing(nop)
-so that io port will not be processed by cpu
-here timer can also be used, but lets do this in looping counter
-*/
 void wait_for_io(uint32 timer_count)
 {
   while(1){
@@ -171,9 +166,11 @@ void test_input() {
             command_buffer[command_index] = '\0';
 
             // Process the command
-            if (strcmp(command_buffer, "clear") == 0) {
+            if (strcmp(command_buffer, "CLEAR") == 0) {
                 clear_vga_buffer(&vga_buffer, g_fore_color, g_back_color);
                 next_line_index = 1;
+                print_string("MoyeOS");
+                print_new_line();
             } else if (strcmp(command_buffer, "HELLO") == 0) {
                 print_string("Welcome to MoyeOS!");
                 print_new_line();
@@ -199,11 +196,9 @@ void test_input() {
                 print_char(ch);
             }
         }
-
         sleep(0x02FFFFFF);
     } while (ch > 0);
 }
-
 
 void kernel_entry()
 {
