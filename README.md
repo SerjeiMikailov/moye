@@ -9,7 +9,6 @@ My objective with this project is explore the keyboard connection between the us
 - 32bits
 - Bootloader: Grub
 - Compiler and linker: GCC
-- Stack Memory: 512 bytes (just the necessary)
 
 ### --> You can run it with QEMU
 
